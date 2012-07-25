@@ -6,7 +6,7 @@ site: home.html codeme.html
 	ocamlc $^ -o $@
 
 %.out: string2.ml html.ml head.ml %.ml
-	ocamlc $^ -o $@
+	ocamlc str.cma $^ -o $@
 
 %.html: %.out
 	./$^ > $@

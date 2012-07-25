@@ -5,9 +5,12 @@ let codemefile = "codeme.html"
 
 let head = 
   (head 
-     [style [".code {color:yellow ; background:black}";
-	    "html {font-weight:bold}" ; 
-	    "li {display:inline}"]])
+     [style ["html {font-weight:bold}" ; 
+	     "li {display:inline}" ; 
+	     "span.keyword {color:green}";
+	     "div.code {width:500px}";
+	     "h3.filename {background:lightblue;padding:1px 5px}"
+	    ]])
 
 let menu = 
   ul 

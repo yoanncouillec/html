@@ -4,7 +4,7 @@ open String2
 
 let codeme = wrapper
   ([h2 [] ["CodeMe"] ;
-   menu ] @ (inc "main.c"))
+   menu ] @ (inc "main.c") @ (inc "server.c"))
 
 let _ = 
   print_string codeme
