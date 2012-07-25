@@ -5,7 +5,7 @@ let codemefile = "codeme.html"
 
 let head = 
   (head 
-     [style ["p {color:yellow ; background:black}";
+     [style [".code {color:yellow ; background:black}";
 	    "html {font-weight:bold}" ; 
 	    "li {display:inline}"]])
 

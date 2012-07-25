@@ -1,3 +1,4 @@
+open String2
 let tag ta attrs children = 
   "<" ^ ta ^ " " ^ 
     (List.fold_left (fun acc (attr,value) -> acc ^ attr ^ "=\"" ^ value ^ "\" ") 
@@ -22,3 +23,6 @@ let th = tag "th"
 let td = tag "td"
 let a = tag "a"
 let pre = tag "pre"
+let inc file = 
+  [a [("href", "main.c")] ["main.c"] ; 
+   pre [("class","code")] [html_entities (get_content "main.c")]]
