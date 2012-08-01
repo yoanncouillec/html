@@ -7,7 +7,7 @@ let tag ta attrs children =
     (List.fold_left (fun acc child -> acc ^ child) "" children) ^ 
     "</" ^ ta ^ ">"
 
-let html head body = tag "html" [] [head;body]
+let html head body = tag "html" [] ([head] @ body)
 let head = tag "head" []
 let style = tag "style" [("type","text/css")]
 let body = tag "body" []
@@ -15,6 +15,9 @@ let p = tag "p"
 let h1 = tag "h1"
 let h2 = tag "h2"
 let h3 = tag "h3"
+let h4 = tag "h4"
+let h5 = tag "h5"
+let h6 = tag "h6"
 let ul = tag "ul"
 let li = tag "li"
 let table = tag "table"
@@ -45,5 +48,5 @@ let inc file =
   [div [("class","code")]
      [h3 [("class","filename")] [a [("href", file)] [file]] ; 
       pre [("class","code")] 
-	[format c_keywords (html_entities (get_content file))]]]
+	[(html_entities (get_content file))]]]
 

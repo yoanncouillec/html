@@ -1,104 +1,68 @@
-#include <sys/socket.h>       /*  socket definitions        */
-#include <sys/types.h>        /*  socket types              */
-#include <arpa/inet.h>        /*  inet (3) funtions         */
-#include <unistd.h>           /*  misc. UNIX functions      */
-
-#include "helper.h"           /*  our own helper functions  */
-
+#define _POSIX_SOURCE 1
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <strings.h>
+#include <string.h>
+#include <fcntl.h>
 
+int main (int argc, char * argv[]){
+  int server_socket;
+  int client_socket;
+  char c;
+  struct sockaddr_in local;
+  int port;
 
-/*  Global constants  */
-
-#define ECHO_PORT          (2002)
-#define MAX_LINE           (1000)
-
-
-int main(int argc, char *argv[]) {
-  int       list_s;                /*  listening socket          */
-  int       conn_s;                /*  connection socket         */
-  short int port;                  /*  port number               */
-  struct    sockaddr_in servaddr;  /*  socket address structure  */
-  char      buffer[MAX_LINE];      /*  character buffer          */
-  char     *endptr;                /*  for strtol()              */
-
-
-  /*  Get port number from the command line, and
-      set to default port if no arguments were supplied  */
-
-  if ( argc == 2 ) {
-    port = strtol(argv[1], &endptr, 0);
-    if ( *endptr ) {
-      fprintf(stderr, "ECHOSERV: Invalid port number.\n");
-      exit(EXIT_FAILURE);
-    }
-  }
-  else if ( argc < 2 ) {
-    port = ECHO_PORT;
-  }
-  else {
-    fprintf(stderr, "ECHOSERV: Invalid arguments.\n");
+  /* Command line arguments */
+  if (argc < 2){
+    fprintf(stderr, "Usage: %s <port>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
-
+  port = atoi(argv[1]);
   
-  /*  Create the listening socket  */
-
-  if ( (list_s = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
-    fprintf(stderr, "ECHOSERV: Error creating listening socket.\n");
+  /* Create socket */
+  if ((server_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    perror("socket");
     exit(EXIT_FAILURE);
   }
+  printf ("Socket OK\n");
 
+  /* Initialize local information */
+  memset ((void *)&local, 0, (size_t) sizeof(local));
+  local.sin_addr.s_addr = htonl(INADDR_ANY);
+  local.sin_port = htons(port);
+  local.sin_family = AF_INET;
 
-  /*  Set all bytes in socket address structure to
-      zero, and fill in the relevant data members   */
+  /* Bind the socket */
+  if (bind(server_socket,(struct sockaddr *)&local,sizeof(local)) == -1) {
+    perror("bind");
+    exit (EXIT_FAILURE);
+  }
+  printf ("Bind OK\n");
 
-  memset(&servaddr, 0, sizeof(servaddr));
-  servaddr.sin_family      = AF_INET;
-  servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  servaddr.sin_port        = htons(port);
+  /* Listen the socket for 1 client */
+  if (listen (server_socket, 1) == -1){
+    perror ("listen");
+    exit (EXIT_FAILURE);
+  }
+  printf ("Listen OK\n");
 
+  /* Accept 1 client */
+  if ((client_socket = accept (server_socket,
+			       (struct sockaddr *) 0,
+			       (socklen_t *)0)) == -1){
+    perror ("accept");
+    exit (EXIT_FAILURE);
+  }
+  printf ("Accept OK\n");
 
-  /*  Bind our socket addresss to the 
-      listening socket, and call listen()  */
-
-  if ( bind(list_s, (struct sockaddr *) &servaddr, sizeof(servaddr)) < 0 ) {
-    fprintf(stderr, "ECHOSERV: Error calling bind()\n");
-    exit(EXIT_FAILURE);
+  for (;;) {
+    read (client_socket, &c, sizeof(c));
+    write (client_socket, &c, sizeof(c));
   }
 
-  if ( listen(list_s, LISTENQ) < 0 ) {
-    fprintf(stderr, "ECHOSERV: Error calling listen()\n");
-    exit(EXIT_FAILURE);
-  }
-
-    
-  /*  Enter an infinite loop to respond
-      to client requests and echo input  */
-
-  while ( 1 ) {
-
-    /*  Wait for a connection, then accept() it  */
-
-    if ( (conn_s = accept(list_s, NULL, NULL) ) < 0 ) {
-      fprintf(stderr, "ECHOSERV: Error calling accept()\n");
-      exit(EXIT_FAILURE);
-    }
-
-
-    /*  Retrieve an input line from the connected socket
-	then simply write it back to the same socket.     */
-
-    Readline(conn_s, buffer, MAX_LINE-1);
-    Writeline(conn_s, buffer, strlen(buffer));
-
-
-    /*  Close the connected socket  */
-
-    if ( close(conn_s) < 0 ) {
-      fprintf(stderr, "ECHOSERV: Error calling close()\n");
-      exit(EXIT_FAILURE);
-    }
-  }
+  return EXIT_SUCCESS;
 }
